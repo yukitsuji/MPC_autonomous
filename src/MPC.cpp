@@ -9,28 +9,11 @@ using CppAD::AD;
 size_t N = 8;
 double dt = 0.05;
 
-// This value assumes the model presented in the classroom is used.
-//
-// It was obtained by measuring the radius formed by running the vehicle in the
-// simulator around in a circle with a constant steering angle and velocity on a
-// flat terrain.
-//
-// Lf was tuned until the the radius formed by the simulating the model
-// presented in the classroom matched the previous radius.
-//
-// This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
-/** from quize
- *
- */
-// The reference velocity is set to 40 mph.
 double ref_cte = 0;
 double ref_epsi = 0;
 double ref_v = 40;
-// The solver takes all the state variables and actuator
-// variables in a singular vector. Thus, we should to establish
-// when one variable starts and another ends to make our lifes easier.
 size_t x_start = 0;
 size_t y_start = x_start + N;
 size_t psi_start = y_start + N;
@@ -48,10 +31,6 @@ public:
 
     typedef CPPAD_TESTVECTOR(AD<double>) ADvector;
     void operator()(ADvector& fg, const ADvector& vars) {
-        // TODO: implement MPC
-        // fg a vector of constraints, x is a vector of constraints.
-        // NOTE: You'll probably go back and forth between this function and
-        // the Solver function below.
 
         //cost is stored in fg[0]
         fg[0] = 0;
@@ -112,16 +91,6 @@ public:
             //desired orientation
             AD<double> psides0 = CppAD::atan(coeffs[1] + 2 * x0 * coeffs[2] + 3 * x0 * x0 * coeffs[3]);
 
-            // Here's `x` to get you started.
-            // The idea here is to constraiynt this value to be 0.
-            //
-            // Recall the equations for the model:
-            // x_[t+1] = x[t] + v[t] * cos(psi[t]) * dt
-            // y_[t+1] = y[t] + v[t] * sin(psi[t]) * dt
-            // psi_[t+1] = psi[t] + v[t] / Lf * delta[t] * dt
-            // v_[t+1] = v[t] + a[t] * dt
-            // cte[t+1] = f(x[t]) - y[t] + v[t] * sin(epsi[t]) * dt
-            // epsi[t+1] = psi[t] - psides[t] + v[t] * delta[t] / Lf * dt
             fg[2 + x_start + i] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
             fg[2 + y_start + i] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
             fg[2 + psi_start + i] = psi1 - (psi0 + v0 * delta0 / Lf * dt);
@@ -134,9 +103,6 @@ public:
     }
 };
 
-//
-// MPC class definition implementation.
-//
 MPC::MPC() {}
 MPC::~MPC() {}
 
@@ -152,18 +118,10 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
     double cte = state[4];
     double epsi = state[5];
 
-    // TODO: Set the number of model variables (includes both states and inputs).
-    // For example: If the state is a 4 element vector, the actuators is a 2
-    // element vector and there are 10 timesteps. The number of variables is:
-    //
-    // 4 * 10 + 2 * 9
     size_t n_vars = N * 6 + (N - 1) * 2;
 
-    // TODO: Set the number of constraints
     size_t n_constraints = N * 6;
 
-    // Initial value of the independent variables.
-    // SHOULD BE 0 besides initial state.
     Dvector vars(n_vars);
     for (int i = 0; i < n_vars; i++) {
         vars[i] = 0;
@@ -179,7 +137,6 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
 
     Dvector vars_lowerbound(n_vars);
     Dvector vars_upperbound(n_vars);
-    // TODO: Set lower and upper limits for variables.
 
     // Set all non-actuators upper and lowerlimits
     // to the max negative and positive values.
