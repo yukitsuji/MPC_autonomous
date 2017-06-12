@@ -28,16 +28,6 @@ In addition to the state and actuator variables, they include the time step `dt`
 `Lf` which is defined as the distance between the vehicle's front and its center of gravity. `Lf`, 
 together with the current velocity `v_t`, determine the current turning radius of the vehicle.
 
----
-## Polynomial Fitting and MPC Preprocessing
-In a first step, the waypoints are transformed into the vehicle coordinate
-system. The resulting x-direction is the forward direction of the vehicle, while the y-direction represents the lateral
-displacement of waypoints relative to the center of the vehicle. This allows for easy fitting of a polynomial of the form 
-`y = a*x^3 + b*x^2 + c*x + d`. When constructing the initial state vector for the solver, the values for x, y, and psi can
-now be conveniently set to zero because the coordinate system is defined relative to the vehicle. The initial cross track error is 
-equal to the constant term of the fitted polynomial in this coordinate system, and the initial orientation error is
-calculated from the first derivative of the polynomial at x=0.
-
 ## N (timestep length) and dt (elapsed duration between timesteps) values.
 * Initially I tried N = 25 and dt = 0.05, and it turned out that the vehicle could not handle sharp turns.
 * Then I tried different N values (22, 20, 18, 15, 13, 11, 10, 8, 7), and found out 10 is the optimal in my case. 
