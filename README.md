@@ -29,6 +29,27 @@ In addition to the state and actuator variables, they include the time step `dt`
 together with the current velocity `v_t`, determine the current turning radius of the vehicle.
 
 ---
+## Polynomial Fitting and MPC Preprocessing
+In a first step, the waypoints are transformed into the vehicle coordinate
+system. The resulting x-direction is the forward direction of the vehicle, while the y-direction represents the lateral
+displacement of waypoints relative to the center of the vehicle. This allows for easy fitting of a polynomial of the form 
+`y = a*x^3 + b*x^2 + c*x + d`. When constructing the initial state vector for the solver, the values for x, y, and psi can
+now be conveniently set to zero because the coordinate system is defined relative to the vehicle. The initial cross track error is 
+equal to the constant term of the fitted polynomial in this coordinate system, and the initial orientation error is
+calculated from the first derivative of the polynomial at x=0.
+
+
+## Model Predictive Control with Latency
+The additional latency introduced in `main.cpp` presents a problem: The steering value computed by the solver
+for the first time-step will already be in the past, which will lead to an increase of the CTE and orientation error. 
+The solver will try to compensate the resulting increase in cost in the next iteration but this compensation will
+also come too late. When this process is repeated a few times, the vehicle will start to oscillate around the intended
+trajectory, especially at higher velocities.
+
+In order to mitigate this problem, I implemented an averaging procedure that takes the mean of the first three predicted
+steering angles. With a time step of 100ms, this corresponds a time interval of 300ms, which is about twice of the total
+expected latency. This averaging measure successfully stabilizes the control behavior.
+
 
 ## Dependencies
 
