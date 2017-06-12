@@ -50,7 +50,25 @@ In order to mitigate this problem, I implemented an averaging procedure that tak
 steering angles. With a time step of 100ms, this corresponds a time interval of 300ms, which is about twice of the total
 expected latency. This averaging measure successfully stabilizes the control behavior.
 
+## Cost Function and Penalty Factors for the Steering Angle and Acceleration
+In order to solve for a possible trajectory, we define a cost function that constrains our solution. It has the form:
 
+```
+Cost = cte^2 + e_psi^2 + e_vel^2 + w_delta * delta^2 + w_a * a^2 + d_delta^2 + d_a^2 
+```
+
+The first three terms penalize the cross track error CTE, the orientation error e_psi and the velocity error.
+By minimizing these error terms, the vehicle will try to stay on the planned waypoint trajectory with the given
+orientation and speed. The last two term penalize sudden changes in the actuators which would lead to undesired 
+sudden accelerations for the passengers. The two terms in the middle penalize the absolute value of the actuators.
+The term `w_delta * delta^2` penalizes the absolute value of the steering angle and is crucial for optimizing the
+control behavior. For small values of the penalty factor `w_delta`, the controller will try to follow the waypoint
+trajectory very closely, which will sometimes lead to unintended steering commands, especially when sharp turns
+are traversed at high speeds.
+
+I found that a value of `w_delta = 125` gave good result for medium velocities up to about 40 mph, which
+should be a reasonable maximum speed for a safe trip around the course with a passenger car.
+The car stays close to the center of the road at all times, including in sharp turns.
 ## Dependencies
 
 * cmake >= 3.5
