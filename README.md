@@ -38,37 +38,19 @@ now be conveniently set to zero because the coordinate system is defined relativ
 equal to the constant term of the fitted polynomial in this coordinate system, and the initial orientation error is
 calculated from the first derivative of the polynomial at x=0.
 
+## N (timestep length) and dt (elapsed duration between timesteps) values.
+* Initially I tried N = 25 and dt = 0.05, and it turned out that the vehicle could not handle sharp turns.
+* Then I tried different N values (22, 20, 18, 15, 13, 11, 10, 8, 7), and found out 10 is the optimal in my case. 
+* I tried to reduced dt to lower values like 0.03 & 0.01, but it turned out the performance of the vehicle got poorer. 
+* When N = 10 and dt = 0.05, the vehicle can deliver a acceptable performance in the track under 40mph. 
 
-## Model Predictive Control with Latency
-The additional latency introduced in `main.cpp` presents a problem: The steering value computed by the solver
-for the first time-step will already be in the past, which will lead to an increase of the CTE and orientation error. 
-The solver will try to compensate the resulting increase in cost in the next iteration but this compensation will
-also come too late. When this process is repeated a few times, the vehicle will start to oscillate around the intended
-trajectory, especially at higher velocities.
+## Preprocess
+Because the ptsx and ptsy provieded are in map coordinate, I transfered the points to vehicle coordinate before I impletement MPC. 
 
-In order to mitigate this problem, I implemented an averaging procedure that takes the mean of the first three predicted
-steering angles. With a time step of 100ms, this corresponds a time interval of 300ms, which is about twice of the total
-expected latency. This averaging measure successfully stabilizes the control behavior.
+## Handel the Latency issue
+The system has a 100 milisecond latency. To handle the latency issue, the value of px (transfered to vehicle coordinate) is calculated by mulitiply (0.1 second) and the speed v. Without latency, the px state would be 0. 
 
-## Cost Function and Penalty Factors for the Steering Angle and Acceleration
-In order to solve for a possible trajectory, we define a cost function that constrains our solution. It has the form:
 
-```
-Cost = cte^2 + e_psi^2 + e_vel^2 + w_delta * delta^2 + w_a * a^2 + d_delta^2 + d_a^2 
-```
-
-The first three terms penalize the cross track error CTE, the orientation error e_psi and the velocity error.
-By minimizing these error terms, the vehicle will try to stay on the planned waypoint trajectory with the given
-orientation and speed. The last two term penalize sudden changes in the actuators which would lead to undesired 
-sudden accelerations for the passengers. The two terms in the middle penalize the absolute value of the actuators.
-The term `w_delta * delta^2` penalizes the absolute value of the steering angle and is crucial for optimizing the
-control behavior. For small values of the penalty factor `w_delta`, the controller will try to follow the waypoint
-trajectory very closely, which will sometimes lead to unintended steering commands, especially when sharp turns
-are traversed at high speeds.
-
-I found that a value of `w_delta = 125` gave good result for medium velocities up to about 40 mph, which
-should be a reasonable maximum speed for a safe trip around the course with a passenger car.
-The car stays close to the center of the road at all times, including in sharp turns.
 ## Dependencies
 
 * cmake >= 3.5
