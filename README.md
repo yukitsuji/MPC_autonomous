@@ -1,6 +1,33 @@
 # CarND-Controls-MPC
 Self-Driving Car Engineer Nanodegree Program
 
+## The Model
+The vehicle state has the following components:
+
+- x: position of the vehicle in the forward direction
+- y: position of the vehicle in the lateral direction
+- psi: yaw angle or orientation of the vehicle
+- v: speed of the vehicle
+
+The actuators of the vehicle are:
+
+- delta: steering angle in radians
+- a: acceleration
+
+The update equations are used to compute the state of the car at the next time step, based on the state at the
+current time step:
+
+```
+x_t+1 = x_t + v_t * cos(psi_t) * dt
+y_t+1 = y_t + v_t * sin(psi_t) * dt
+psi_t+1 = psi_t + v_t / Lf * delta * dt
+v_t+1 = v_t + a_t * dt
+```
+
+In addition to the state and actuator variables, they include the time step `dt` and the factor
+`Lf` which is defined as the distance between the vehicle's front and its center of gravity. `Lf`, 
+together with the current velocity `v_t`, determine the current turning radius of the vehicle.
+
 ---
 
 ## Dependencies
